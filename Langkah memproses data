@@ -1,0 +1,8 @@
+Secara umum, ada 4 tahapan yang perlu kita lakukan dalam memproses data yaitu:
+
+1. Ubah dataset ke dalam bentuk larik. Yup, larik berisi angka-angka adalah format data yang dapat diterima oleh model kita.
+Masih ingat bukan, seperti pada kelas belajar machine learning untuk pemula, model kita menerima gambar sebagai matriks atau larik 2 dimensi.
+2. Pisahkan atribut dan label pada data. Model kita akan mempelajari korelasi antara atribut dan label pada dataset kita.
+3. Ubah skala data dalam skala yang seragam. Tahap ini sudah kita pelajari sebelumnya. Masih ingat? Nama teknik ini adalah normalization. 
+Normalization dilakukan karena NN bekerja dengan baik memproses nilai yang berada di antara 0 dan 1.
+4. Terakhir, pisahkan dataset ke dalam data latih dan data uji. Betul, kita memerlukan data uji untuk mengevaluasi kinerja dari model yang telah kita latih ya.
