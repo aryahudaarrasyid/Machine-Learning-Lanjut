@@ -1,0 +1,23 @@
+import tensorflow as tf
+import numpy as np
+from tensorflow import keras
+
+xs = np.array([1.0,  2.0, 3.0, 4.0, 5.0, 6.0], dtype=float)
+ys = np.array([4.0, 6.0, 8.0, 10.0, 12.0, 14.0], dtype=float)
+
+model = tf.keras.Sequential([keras.layers.Dense(units=1, input_shape=[1])])
+
+Pada model sequential ini, kita kemudian isi layer yang kita inginkan untuk model kita. 
+Untuk membuat sebuah layer, kita dapat menggunakan fungsi keras.layers.Dense().
+
+- Parameter units dari fungsi keras.layers.Dense() adalah jumlah perseptron yang dimiliki oleh layer tersebut. 
+Yang perlu diperhatikan pada model sequential adalah, layer pertama dari model tersebut haruslah memiliki parameter 
+input_shape agar model bisa mengenali bentuk input yang akan diprosesnya.
+- Parameter input_shape menunjukkan bentuk dari setiap elemen input yang akan diterima oleh model. Pada kasus kita 
+setiap elemen dari data kita adalah sebuah bilangan numerik 1 digit, sehingga kita bisa isi input_shape kita dengan 
+angka 1. Jika sebuah elemen dari dataset kita berupa gambar yang memiliki dimensi 32*32 piksel, maka input_shape yang sesuai adalah [32,32].
+
+model.compile(optimizer='sgd', loss='mean_squared_error')
+model.fit(xs, ys, epochs=150)
+
+print(model.predict([10.0]))
