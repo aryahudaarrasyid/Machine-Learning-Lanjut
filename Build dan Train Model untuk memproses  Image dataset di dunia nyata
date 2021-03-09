@@ -1,0 +1,109 @@
+# Mengunduh data
+!wget --no-check-certificate \
+  https://dicodingacademy.blob.core.windows.net/picodiploma/ml_pengembangan_academy/Chessman-image-dataset.zip \
+  -O /tmp/Chessman-image-dataset.zip
+  
+# Mengekstrak file yang masih dalam bentuk zip
+import os
+import zipfile
+local_zip = '/tmp/Chessman-image-dataset.zip'
+zip_ref = zipfile.ZipFile(local_zip, 'r')
+zip_ref.extractall('/tmp')
+zip_ref.close()
+
+# Melihat list direktori yang ada pada dataset
+os.listdir('/tmp/Chessman-image-dataset/Chess')
+
+# Melihat total gambar pada masing2 direktori
+print('total Bishop images :', len(os.listdir('/tmp/Chessman-image-dataset/Chess/Bishop')))
+print('total Pawn images :', len(os.listdir('/tmp/Chessman-image-dataset/Chess/Pawn')))
+print('total King images :', len(os.listdir('/tmp/Chessman-image-dataset/Chess/King')))
+print('total Knight images :', len(os.listdir('/tmp/Chessman-image-dataset/Chess/Knight')))
+print('total Queen images :', len(os.listdir('/tmp/Chessman-image-dataset/Chess/Queen')))
+print('total Rook images :', len(os.listdir('/tmp/Chessman-image-dataset/Chess/Rook')))
+
+# Melihat contoh salah satu dari gambar
+from keras.preprocessing import image
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+%matplotlib inline
+img = image.load_img('/tmp/Chessman-image-dataset/Chess/King/00000145.png')
+imgplot = plt.imshow(img)
+
+# Dataset yang kita miliki hanya terdiri dari 1 buah direktori dan tidak terbagi menjadi
+# direktori training dan testing. Tapi tenang, dengan ImageDataGenerator kita tidak perlu 
+# susah payah membagi direktori secara manual, cukup dengan menggunakan parameter validation_split
+from tensorflow.keras.preprocessing.image import ImageDataGenerator 
+train_dir = os.path.join('/tmp/Chessman-image-dataset/Chess')
+train_datagen = ImageDataGenerator(rescale=1./255,
+    rotation_range=20,
+    zoom_range=0.2,
+    shear_range=0.2,
+    fill_mode = 'nearest',
+    validation_split=0.1) # set validation split
+
+train_generator = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=(150, 150),
+    batch_size=8,
+    class_mode='categorical',
+    subset='training') # set as training data
+validation_generator = train_datagen.flow_from_directory(
+    train_dir, # same directory as training data
+    target_size=(150, 150),
+    batch_size=16,
+    class_mode='categorical',
+    subset='validation')
+
+# Menkontruksi model
+import tensorflow as tf
+model = tf.keras.models.Sequential([
+    # Note the input shape is the desired size of the image 150x150 with 3 bytes color
+    tf.keras.layers.Conv2D(64, (3,3), activation='relu', input_shape=(150, 150, 3)),
+    tf.keras.layers.MaxPooling2D(2,2),
+    tf.keras.layers.Conv2D(32, (3,3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(2,2),
+    tf.keras.layers.Dropout(0.4),  
+    tf.keras.layers.Conv2D(64, (3,3), activation='relu'), 
+    tf.keras.layers.MaxPooling2D(2,2),
+    tf.keras.layers.Dropout(0.4),  
+    # Flatten the results to feed into a DNN
+    tf.keras.layers.Flatten(), 
+    # 512 neuron hidden layer
+    tf.keras.layers.Dense(512, activation='relu'),
+    tf.keras.layers.Dense(256, activation='relu'),
+    # Only 1 output neuron. It will contain a value from 0-1 where 0 for 1 class ('cats') and 1 for the other ('dogs')
+    tf.keras.layers.Dense(6, activation='softmax')  
+])
+
+# Menentukan optimizer dan loss yang akan dipakai
+model.compile(optimizer=tf.optimizers.Adam(),
+              loss='categorical_crossentropy',
+              metrics = ['accuracy'])
+   
+# Melatih model
+history = model.fit(train_generator,
+                              validation_data=validation_generator,
+                              epochs=50,
+                              verbose=2)
+
+# Membuat plot accuracy
+import matplotlib.pyplot as plt
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('Akurasi Model')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+
+# Membuat plot loss
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Loss Model')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
