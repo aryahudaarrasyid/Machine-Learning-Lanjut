@@ -1,0 +1,71 @@
+# Menggunakan Dropout untuk mencegah overfitting
+# Untuk pemakaian dropout sendiri cukup dengan menambahkan layer dropout pada sebuah hidden layer pada model anda
+# Contoh
+cnn_mod = tf.keras.models.Sequential([
+    tf.keras.layers.Conv2D(16, (3,3), activation='relu', input_shape=(150, 150, 3)),
+    tf.keras.layers.MaxPooling2D(2, 2),
+    tf.keras.layers.Conv2D(32, (3,3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(2,2),
+    tf.keras.layers.Conv2D(64, (3,3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(2,2),
+    tf.keras.layers.Conv2D(128, (3,3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(2,2),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(512, activation='relu'),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dense(256, activation='relu'),
+    tf.keras.layers.Dropout(0.5),
+    tf.keras.layers.Dense(3, activation='softmax')
+])
+
+# Menggunakan Callbacks
+import tensorflow as tf
+import pandas as pd
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+from keras.models import Sequential
+from keras.layers import Dense
+df = pd.read_csv('Iris.csv')
+df = df.drop(columns='Id')
+category = pd.get_dummies(df.Species)
+new_df = pd.concat([df, category], axis=1)
+new_df = new_df.drop(columns='Species')
+dataset = new_df.values
+X = dataset[:,0:4]
+y = dataset[:,4:7]
+min_max_scaler = preprocessing.MinMaxScaler()
+X_scale = min_max_scaler.fit_transform(X)
+X_train, X_test, Y_train, Y_test = train_test_split(X_scale, y, test_size=0.3)
+model = Sequential([    
+                    Dense(64, activation='relu', input_shape=(4,)),    
+                    Dense(64, activation='relu'),    
+                    Dense(3, activation='sigmoid'),])
+model.compile(optimizer='Adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Disinilah pemakaian callbacks
+class myCallback(tf.keras.callbacks.Callback):
+  def on_epoch_end(self, epoch, logs={}):
+    if(logs.get('accuracy')>0.9):
+      print("\nAkurasi telah mencapai >90%!")
+      self.model.stop_training = True
+callbacks = myCallback()
+# Tambahkan callback tersebut pada saat pelatihan model
+model.fit(X_train, Y_train, epochs=50, callbacks=[callbacks])
+
+# Menggunakan batch loading
+import tensorflow as tf
+mnist = tf.keras.datasets.mnist
+(training_images, training_labels), (test_images, test_labels) = mnist.load_data()
+training_images  = training_images / 255.0
+test_images = test_images / 255.0
+model = tf.keras.models.Sequential([tf.keras.layers.Flatten(input_shape=(28,28)), 
+                                    tf.keras.layers.Dense(128, activation=tf.nn.relu), 
+                                    tf.keras.layers.Dense(10, activation=tf.nn.softmax)])
+model.compile(optimizer = tf.optimizers.Adam(),
+              loss = 'sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+              
+# Disinilah penggunaan batch size isi batch size dengan 32 atau 128 pilihlah yang paling cepat
+model.fit(training_images, training_labels, batch_size=32, epochs=5)
