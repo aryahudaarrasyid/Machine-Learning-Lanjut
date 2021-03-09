@@ -1,0 +1,12 @@
+# Augmentsi gambar adalah sebuah teknik untuk memperbanyak data latih tanpa menambah data yang baru
+# Adapun Cara untuk Augmentasi adalah:
+1. Rescale - contoh augmentasi ini yang pertama sekali kita temui. Rescale berfungsi untuk menormalisasi setiap nilai piksel pada gambar menjadi nilai antara 0 sampai 1.
+2. Horizontal_flip - Seperti contoh sebelumnya, horizontal flip berfungsi untuk membalikkan gambar secara horizontal
+3. Vertical_flip - Berkebalikan dengan horizontal flip, sesuai namanya vertical flip membalikkan gambar secara vertikal
+4. Zoom_range - melakukan augmentasi berupa zoom pada gambar 
+5. Rotation_range - melakukan rotasi pada gambar secara acak
+
+Untuk melihat jenis augmentasi secara lengkap dapat dilihat pada:
+https://keras.io/api/preprocessing/image/
+
+Augmentasi gambar tidak dapat diaplikasikan untuk data training atau validasi
