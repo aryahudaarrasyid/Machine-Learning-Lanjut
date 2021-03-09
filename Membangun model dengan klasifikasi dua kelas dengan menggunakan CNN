@@ -1,0 +1,90 @@
+# Melakukan install pada tensorflow tipe 2.3.0
+import sys
+!{sys.executable} -m pip install tensorflow==2.3.0
+
+# Import data yang ingin diolah ke notebook
+import types
+import pandas as pd
+from botocore.client import Config
+import ibm_boto3
+
+def __iter__(self): return 0
+
+# @hidden_cell
+# The following code accesses a file in your IBM Cloud Object Storage. It includes your credentials.
+# You might want to remove those credentials before you share the notebook.
+client_ef795513d32540c68ad0d8deee556ad6 = ibm_boto3.client(service_name='s3',
+    ibm_api_key_id='M8CC32czCZDqG6JA6Md9ydYfw3hnfFHASOGllsxp6orw',
+    ibm_auth_endpoint="https://iam.cloud.ibm.com/oidc/token",
+    config=Config(signature_version='oauth'),
+    endpoint_url='https://s3-api.us-geo.objectstorage.service.networklayer.com')
+
+body = client_ef795513d32540c68ad0d8deee556ad6.get_object(Bucket='coba-donotdelete-pr-wwpbtx6nfpvlyj',Key='citrus.csv')['Body']
+# add missing __iter__ method, so pandas accepts body as file-like object
+if not hasattr(body, "__iter__"): body.__iter__ = types.MethodType( __iter__, body )
+
+df = pd.read_csv(body)
+df.head(10000)
+
+# Melihat apakah ada Null atau tidak dan melihat tipe masing2 data
+df.info()
+
+# Mendeklasrasikan nilai pada group name menjadi bilangan numerik
+df.name[df.name == 'orange'] = 0
+df.name[df.name == 'grapefruit'] = 1
+
+dataset = df.values
+
+#Sampai pada tahap ini model kita belum dapat memproses dataset ini karena dataset kita masih dalam bentuk dataframe. 
+#Betul, dataset harus dalam bentuk array agar dapat diproses oleh model. Nah untungnya kita dapat melakukan ini dengan
+#mudah menggunakan atribut values dari dataframe. Values mengembalikan numpy array yang dikonversi dari dataframe.
+dataset = df.values
+#Sekarang dataset sudah dalam bentuk array
+
+#pisahkan kolom dengan atribut
+# pilih 4 kolom terakhir sebagai atribut
+X = dataset[:,1:6]
+y = dataset[:,0]
+# bilangan sebelum koma untuk memilih baris pada dataframe
+# bilangan setelah koma untuk memilih kolom pada dataframe
+
+# Normalization
+from sklearn import preprocessing
+min_max_scaler = preprocessing.MinMaxScaler()
+X_scale = min_max_scaler.fit_transform(X)
+X_scale
+
+# pisahkan data training dan testing
+from sklearn.model_selection import train_test_split
+X_train, X_test, Y_train, Y_test = train_test_split(X_scale, y, test_size=0.3)
+
+import numpy as np
+ 
+#Dataset telah dipisahkan ke dalam training dan test set.  
+#Karena tadi kita mengubah nilai-nilai pada kolom name menjadi bilangan numerik, 
+#yang artinya kita mengubah label menjadi tipe data boolean, maka kita perlu mengubah tipe data tersebut menjadi float32 dengan cara berikut.
+Y_train = Y_train.astype(np.float32)
+Y_test = Y_test.astype(np.float32)
+
+# Install library keras 
+import sys
+!{sys.executable} -m pip install keras
+
+from keras.models import Sequential
+from keras.layers import Dense
+
+model = Sequential([    
+                    Dense(32, activation='relu', input_shape=(5,)),    
+                    Dense(32, activation='relu'),    
+                    Dense(1, activation='sigmoid'),])
+         
+model.compile(optimizer='sgd',
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+              
+model.fit(X_train, Y_train, epochs=100)
+
+model.evaluate(X_test, Y_test)
+# elemen pertama adalah loss dan elemen kedua adalah akurasi
+
+print(model.predict([[15.35,253.89,149,77,20]]))
