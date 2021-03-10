@@ -1,0 +1,28 @@
+from tensorflow.keras.preprocessing.text import Tokenizer
+tokenizer = Tokenizer(num_words= 15, oov_token='-')
+# num words diisi 15 artinya hanya 15 huruf yang sering muncul akan ditokenisasi menjadi karakter tertentu
+
+# Membuat teks yang akan ditokenisasi dan kita pakai untuk pelatihan model
+teks = ['Saya suka programming',
+        'Programming sangat menyenangkan!',
+        'Machine Learning berbeda dengan pemrograman konvensional']
+ 
+# Melakukan proses tokenisasi
+tokenizer.fit_on_texts(teks)
+ 
+# Ubah kalimat kedalam nilai yang sesuai
+sequences = tokenizer.texts_to_sequences(teks)
+ 
+# Melihat nilai tokenisasi
+print(tokenizer.word_index)
+ 
+# selanjutnya yaitu proses untuk membuat setiap kalimat pada teks memiliki panjang yang seragam
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+sequences_samapanjang = pad_sequences(sequences)
+print(sequences_samapanjang)
+
+# mengatur berapa maksimum panjang setiap sequence dengan parameter maxlen dan nilai yang kita inginkan
+sequences_samapanjang = pad_sequences(sequences, 
+                                      padding='post',
+                                      maxlen=5,
+                                      truncating='post')
